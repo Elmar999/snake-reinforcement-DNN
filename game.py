@@ -5,6 +5,8 @@ import tensorflow as tf
 import random
 import time
 from tqdm import tqdm
+import cProfile
+
 
 
 class Game:
@@ -33,9 +35,9 @@ class Game:
         training_data = []
         accepted_scores = []
 
-        for game_index in tqdm(range(100)):
+        for game_index in tqdm(range(300)):
             # reset environment
-            
+
             player = Player()
             player.init_player()
             player.init_food()
@@ -48,7 +50,7 @@ class Game:
                 if random:
                     action = np.random.randint(0, 4)  # make random choice
                     player.move(action)
-                    
+
                 state = [player.px, player.py, player.food_x, player.food_y]
                 state, action, distance, game_score, _ = player.run(
                     state, random=False, render=True)
@@ -57,9 +59,6 @@ class Game:
                     game_memory.append([previous_observation, action])
                 previous_observation = state
 
-                # if distance < prev_distance:
-                #     prev_distance = distance
-                #     reward = 10
                 if game_score != 0:
                     game_prev_score = game_score
                     reward = 100
@@ -85,7 +84,7 @@ class Game:
                     training_data.append([data[0], output])
 
         training_data_save = np.array(training_data)
-        np.save('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data.npy',
+        np.save('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_200.npy',
                 training_data_save, allow_pickle=True)
         print(accepted_scores)
         return training_data
@@ -98,16 +97,53 @@ class Game:
         while True:
             state = [player.px, player.py, player.food_x, player.food_y]
             _, _, _, _, done = player.run(
-                state, model_path='/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5')
+                state, model_path='/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5', random=True, render=True)
             if done:
                 player.init_food()
                 player.init_player()
+
+    def game_run_v2(self):
+        def render():
+            for i, j in zip(player.snake_px, player.snake_py): 
+                episode_env = player.env.copy()
+                cv2.circle(episode_env, (player.food_x, player.food_y),
+                        5, (255, 255, 255), 5)
+                cv2.circle(episode_env, (i, j),
+                        5, (255, 255, 255), 1)
+                cv2.putText(episode_env, "score" + str(player.score),
+                            (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
+                cv2.imshow("env", episode_env)
+                cv2.waitKey(1)
+
+        player = Player()
+        player.init_food()
+        player.init_player()
+        model = tf.keras.models.load_model('/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5')
+
+
+        while True:
+            # rendering 
+            render()
+            
+                      
+            state = [player.px, player.py, player.food_x, player.food_y]
+            player.run_v2(state, model)
+            print(player.snake_px, player.snake_py)
+            if player.done is True:
+                # TODO 
+                # restart the game after 10 seconds
+                return
+            time.sleep(0.05)
+
+
+
+
 
 
 def train_model(training_data):
     model = tf.keras.models.Sequential([
         tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
-        tf.keras.layers.Dense(64, activation='relu'),
+        # tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(4, activation='softmax')])
     model.compile(loss='categorical_crossentropy',
                   optimizer=tf.keras.optimizers.Adam(lr=0.001))
@@ -116,19 +152,23 @@ def train_model(training_data):
                  ).reshape(-1, len(training_data[0][0]))
     y = np.array([i[1] for i in training_data]
                  ).reshape(-1, len(training_data[0][1]))
-    model.fit(X, y, epochs=100)
+    model.fit(X, y, epochs=1000)
     model.save(
-        "/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5")
+        "/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5")
     return model
 
 
 if __name__ == "__main__":
 
     game = Game()
-    game.game_run()
+    # game.game_run()
+    game.game_run_v2()
 
     # training_data = game.train_run_game()
     # training_data = game.random_game(random=False)
-    # training_data = np.load('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data.npy')
-    # print(ar)
+    # training_data = np.load('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_200.npy')
     # model = train_model(training_data)
+    # print(ar)
+    # trained_model = tf.keras.models.load_model('/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5')
+    # trained_model.predict(np.reshape([364, 173, 365, 422], (1, 4)))
+    # cProfile.run(game.game_run_v2())
