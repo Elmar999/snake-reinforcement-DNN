@@ -8,26 +8,11 @@ from tqdm import tqdm
 import cProfile
 
 
-
 class Game:
     def __init__(self):
-        self.memory = deque(maxlen=2000)
-        self.batch_size = 32
         self.state = np.array((0, 0, 0, 0)).reshape((1, 4))
-        self.epislon = 1.0
-        self.epislon_min = 0.01
-        self.epislon_decay = 0.995
-        self.gamma = 0.95
-        self.t1 = time.time()
-        self.load_model = False
         self.episode = 0
-        self.player = Player()
-
-    def act(self, state, model):
-        if np.random.rand() <= self.epislon:
-            return np.random.choice([0, 1, 2, 3])
-        act_values = model.predict(state)
-        return np.argmax(act_values[0])  # returns action
+        self.load_model = False
 
     def random_game(self, random=True):
         # if random is false means we will play game
@@ -41,6 +26,7 @@ class Game:
             player = Player()
             player.init_player()
             player.init_food()
+            player.score = 0
             score = 0
             game_memory = []
             game_prev_score = 0
@@ -69,7 +55,6 @@ class Game:
                 score += reward
                 print("end")
 
-                # print(score)
             if score >= score_req:
                 accepted_scores.append(score)
                 for data in game_memory:
@@ -84,60 +69,41 @@ class Game:
                     training_data.append([data[0], output])
 
         training_data_save = np.array(training_data)
-        np.save('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_200.npy',
+        np.save('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_test.npy',
                 training_data_save, allow_pickle=True)
         print(accepted_scores)
         return training_data
 
-    def game_run(self):
-        player = Player()
-        player.init_food()
-        player.init_player()
-
-        while True:
-            state = [player.px, player.py, player.food_x, player.food_y]
-            _, _, _, _, done = player.run(
-                state, model_path='/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5', random=True, render=True)
-            if done:
-                player.init_food()
-                player.init_player()
+    def render(self, player):
+        episode_env = player.env.copy()
+        cv2.circle(episode_env, (player.food_x, player.food_y),
+                   5, (255, 255, 255), 5)
+        cv2.circle(episode_env, (player.px, player.py),
+                   5, (255, 255, 255), 1)
+        cv2.putText(episode_env, "score" + str(player.score),
+                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
+        cv2.imshow("env", episode_env)
+        cv2.waitKey(1)
 
     def game_run_v2(self):
-        def render():
-            for i, j in zip(player.snake_px, player.snake_py): 
-                episode_env = player.env.copy()
-                cv2.circle(episode_env, (player.food_x, player.food_y),
-                        5, (255, 255, 255), 5)
-                cv2.circle(episode_env, (i, j),
-                        5, (255, 255, 255), 1)
-                cv2.putText(episode_env, "score" + str(player.score),
-                            (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
-                cv2.imshow("env", episode_env)
-                cv2.waitKey(1)
 
         player = Player()
         player.init_food()
         player.init_player()
-        model = tf.keras.models.load_model('/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5')
-
+        model = tf.keras.models.load_model(
+            '/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5')
 
         while True:
-            # rendering 
-            render()
-            
-                      
+            # rendering
+            game.render(player)
+
             state = [player.px, player.py, player.food_x, player.food_y]
             player.run_v2(state, model)
-            print(player.snake_px, player.snake_py)
             if player.done is True:
-                # TODO 
+                # TODO
                 # restart the game after 10 seconds
                 return
             time.sleep(0.05)
-
-
-
-
 
 
 def train_model(training_data):

@@ -18,8 +18,7 @@ class Player:
         self.food_y = 0
         self.env = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8)
         self.score = 0
-        self.snake_px = []
-        self.snake_py = []
+        self.actions_history = []
 
     def init_food(self):
         offset = 10
@@ -114,13 +113,13 @@ class Player:
             self.update_length()
 
         if self.px <= 0 + 10 or self.py <= 0 + 10 or self.px >= WINDOW_WIDTH - 10 or self.py >= WINDOW_HEIGHT - 10:
-            self.done = True
+            done = True
             self.reward = -10
             print("done")
         else:
-            self.done = False
+            done = False
 
-        return state, self.action, distance, self.score, self.done
+        return state, self.action, distance, self.score, done
 
     def run_v2(self, state, model=None):
         if model:
@@ -146,7 +145,6 @@ class Player:
         elif self.action == 0:
             self.move(0)
 
-        # self.state = [self.px, self.py, self.food_x, self.food_y]
 
         player_distance = np.array([self.px, self.py])
         food_distance = np.array([self.food_x, self.food_y])
@@ -158,9 +156,10 @@ class Player:
             # print(self.score)
 
         if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
-            self.done = True
+            done = True
             self.reward = -10
             print(self.px, self.py, self.food_x, self.food_y)
-            print("done")
+            print("done")   
+            exit(0)
         else:
-            self.done = False
+            done = False
