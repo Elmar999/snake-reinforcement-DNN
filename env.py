@@ -50,47 +50,36 @@ class Player:
             if self.px > border_point:
                 self.px -= 10
 
-    def update_length(self):
-        # add one cell to tail
-        pass
-
-    def update_positions():
-        pass
-
     def user_play(self, movement):
-        dc = dict()
-        dc['w'] = 0
-        dc['d'] = 1
-        dc['s'] = 2
-        dc['a'] = 3
+        option = dict()
+        option['w'] = 0
+        option['d'] = 1
+        option['s'] = 2
+        option['a'] = 3
 
         if movement == ord('w'):
-            return dc['w']
+            return option['w']
         elif movement == ord('d'):
-            return dc['d']
+            return option['d']
         elif movement == ord('s'):
-            return dc['s']
+            return option['s']
         elif movement == ord('a'):
-            return dc['a']
+            return option['a']
 
-    def run(self, state, random=False, model_path=False, render=False):
+    def preprocessing(self, state):
         self.episode_env = self.env.copy()
         state = [self.px, self.py, self.food_x, self.food_y]
 
-        if render:
-            cv2.circle(self.episode_env, (self.food_x, self.food_y),
-                       5, (255, 255, 255), 5)
-            cv2.circle(self.episode_env, (self.px, self.py),
-                       5, (255, 255, 255), 1)
-            cv2.putText(self.episode_env, "score" + str(self.score),
-                        (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
-            cv2.imshow("env", self.episode_env)
-            if random:
-                cv2.waitKey(1)
-            else:
-                movement = cv2.waitKey(0)
-                self.action = self.user_play(movement)
-                print(self.action)
+        cv2.circle(self.episode_env, (self.food_x, self.food_y),
+                    5, (255, 255, 255), 5)
+        cv2.circle(self.episode_env, (self.px, self.py),
+                    5, (255, 255, 255), 1)
+        cv2.putText(self.episode_env, "score" + str(self.score),
+                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
+        cv2.imshow("env", self.episode_env)
+        movement = cv2.waitKey(0)
+        self.action = self.user_play(movement)
+            # print(self.action)
 
         if self.action == 3:
             self.move(3)
@@ -103,23 +92,22 @@ class Player:
 
         state = [self.px, self.py, self.food_x, self.food_y]
 
+        
         player_distance = np.array([self.px, self.py])
         food_distance = np.array([self.food_x, self.food_y])
         distance = np.linalg.norm(np.subtract(player_distance, food_distance))
         if distance < 12:
             self.init_food()
             self.score += 1
-            print(self.score)
-            self.update_length()
+           
 
-        if self.px <= 0 + 10 or self.py <= 0 + 10 or self.px >= WINDOW_WIDTH - 10 or self.py >= WINDOW_HEIGHT - 10:
+        if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
             done = True
             self.reward = -10
-            print("done")
-        else:
-            done = False
+            print("done")   
+            # exit(0)
 
-        return state, self.action, distance, self.score, done
+        return state, self.action, self.score
 
     def run_v2(self, state, model=None):
         if model:
@@ -152,7 +140,7 @@ class Player:
         if distance < 12:
             self.init_food()
             self.score += 1
-            self.update_length()
+            # self.update_length()
             # print(self.score)
 
         if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:

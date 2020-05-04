@@ -14,15 +14,14 @@ class Game:
         self.episode = 0
         self.load_model = False
 
-    def random_game(self, random=True):
+    def random_game(self):
         # if random is false means we will play game
-        score_req = -200
+        score_requirement = -200
         training_data = []
         accepted_scores = []
 
-        for game_index in tqdm(range(300)):
+        for game_index in tqdm(range(1)):
             # reset environment
-
             player = Player()
             player.init_player()
             player.init_food()
@@ -30,20 +29,15 @@ class Game:
             score = 0
             game_memory = []
             game_prev_score = 0
-            previous_observation = []
+            prev_state = []
             prev_distance = 1000
             for step_index in range(1000):
-                if random:
-                    action = np.random.randint(0, 4)  # make random choice
-                    player.move(action)
-
                 state = [player.px, player.py, player.food_x, player.food_y]
-                state, action, distance, game_score, _ = player.run(
-                    state, random=False, render=True)
-
-                if len(previous_observation) > 0:
-                    game_memory.append([previous_observation, action])
-                previous_observation = state
+                # player.preprocessing()
+                new_state, action, game_score = player.preprocessing(state)
+                if len(prev_state) > 0:
+                    game_memory.append([prev_state, action])
+                prev_state = new_state
 
                 if game_score != 0:
                     game_prev_score = game_score
@@ -55,7 +49,7 @@ class Game:
                 score += reward
                 print("end")
 
-            if score >= score_req:
+            if score >= score_requirement:
                 accepted_scores.append(score)
                 for data in game_memory:
                     if data[1] == 0:
@@ -95,7 +89,7 @@ class Game:
 
         while True:
             # rendering
-            game.render(player)
+            self.render(player)
 
             state = [player.px, player.py, player.food_x, player.food_y]
             player.run_v2(state, model)
@@ -124,14 +118,14 @@ def train_model(training_data):
     return model
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    game = Game()
+#     game = Game()
     # game.game_run()
-    game.game_run_v2()
+    # game.game_run_v2()
 
     # training_data = game.train_run_game()
-    # training_data = game.random_game(random=False)
+    # training_data = game.random_game()
     # training_data = np.load('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_200.npy')
     # model = train_model(training_data)
     # print(ar)
