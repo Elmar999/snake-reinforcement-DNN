@@ -19,6 +19,7 @@ class Player:
         self.env = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8)
         self.score = 0
         self.actions_history = []
+        self.velocity = 5
 
     def init_food(self):
         offset = 10
@@ -36,19 +37,19 @@ class Player:
         if action == 0:  # up
             border_point = 0
             if self.py > border_point:
-                self.py -= 10
+                self.py -= self.velocity
         elif action == 1:  # right
             border_point = WINDOW_HEIGHT
             if self.px < border_point:
-                self.px += 10
+                self.px += self.velocity
         elif action == 2:  # down
             border_point = WINDOW_WIDTH
             if self.py < border_point:
-                self.py += 10
+                self.py += self.velocity
         elif action == 3:  # left
             border_point = 0
             if self.px > border_point:
-                self.px -= 10
+                self.px -= self.velocity
 
     def user_play(self, movement):
         option = dict()
