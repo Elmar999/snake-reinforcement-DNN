@@ -30,8 +30,6 @@ class Player:
         offset = 0
         self.px = np.random.randint(0 + offset, WINDOW_HEIGHT-offset)
         self.py = np.random.randint(0 + offset, WINDOW_HEIGHT-offset)
-        # self.snake_px.append(self.px)
-        # self.snake_py.append(self.py)
 
     def move(self, action):
         if action == 0:  # up
@@ -67,20 +65,27 @@ class Player:
         elif movement == ord('a'):
             return option['a']
 
+    def check_distance(self):
+        player_distance = np.array([self.px, self.py])
+        food_distance = np.array([self.food_x, self.food_y])
+        distance = np.linalg.norm(np.subtract(player_distance, food_distance))
+        if distance < 12:
+            self.init_food()
+            self.score += 1
+
     def preprocessing(self, state):
         self.episode_env = self.env.copy()
         state = [self.px, self.py, self.food_x, self.food_y]
 
         cv2.circle(self.episode_env, (self.food_x, self.food_y),
-                    5, (255, 255, 255), 5)
+                   5, (255, 255, 255), 5)
         cv2.circle(self.episode_env, (self.px, self.py),
-                    5, (255, 255, 255), 1)
+                   5, (255, 255, 255), 1)
         cv2.putText(self.episode_env, "score" + str(self.score),
                     (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
         cv2.imshow("env", self.episode_env)
         movement = cv2.waitKey(0)
         self.action = self.user_play(movement)
-            # print(self.action)
 
         if self.action == 3:
             self.move(3)
@@ -93,20 +98,12 @@ class Player:
 
         state = [self.px, self.py, self.food_x, self.food_y]
 
-        
-        player_distance = np.array([self.px, self.py])
-        food_distance = np.array([self.food_x, self.food_y])
-        distance = np.linalg.norm(np.subtract(player_distance, food_distance))
-        if distance < 12:
-            self.init_food()
-            self.score += 1
-           
+        self.check_distance()
 
         if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
             done = True
             self.reward = -10
-            print("done")   
-            # exit(0)
+            print("done")
 
         return state, self.action, self.score
 
@@ -134,21 +131,13 @@ class Player:
         elif self.action == 0:
             self.move(0)
 
-
-        player_distance = np.array([self.px, self.py])
-        food_distance = np.array([self.food_x, self.food_y])
-        distance = np.linalg.norm(np.subtract(player_distance, food_distance))
-        if distance < 12:
-            self.init_food()
-            self.score += 1
-            # self.update_length()
-            # print(self.score)
+        self.check_distance()
 
         if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
             done = True
             self.reward = -10
             print(self.px, self.py, self.food_x, self.food_y)
-            print("done")   
+            print("done")
             exit(0)
         else:
             done = False
