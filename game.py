@@ -1,13 +1,10 @@
+import time
+import config
 from env import *
 import numpy as np
-from collections import deque
-import tensorflow as tf
-import random
-import time
 from tqdm import tqdm
-import cProfile
-import config
-import argparse
+import tensorflow as tf
+
 
 
 class Game:
