@@ -12,7 +12,6 @@ class Player:
         self.py = 0
         self.done = False
         self.action = None
-        self.state = None
         self.reward = 0
         self.food_x = 0
         self.food_y = 0
@@ -107,7 +106,7 @@ class Player:
 
         return state, self.action, self.score
 
-    def run_v2(self, state, model=None):
+    def run(self, state, model=None):
         if model:
             self.action = np.argmax(
                 model.predict(np.reshape(state, (1, 4))))

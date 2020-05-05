@@ -7,6 +7,7 @@ import time
 from tqdm import tqdm
 import cProfile
 import config
+import argparse
 
 
 class Game:
@@ -27,7 +28,7 @@ class Game:
             player.score = 0
             score = 0
             game_memory = []
-            game_prev_score = 0
+            game_score = 0
             prev_state = []
             prev_distance = 1000
             for step_index in range(1000):
@@ -39,10 +40,8 @@ class Game:
                 prev_state = new_state
 
                 if game_score != 0:
-                    game_prev_score = game_score
                     reward = 100
-                    print(reward)
-                    # break
+                    break
                 else:
                     reward = -5
                 score += reward
@@ -66,7 +65,8 @@ class Game:
         print(accepted_scores)
         return training_data
 
-     def train(self, training_data):
+    def train(self, training_data_path):
+        training_data = np.load(training_data_path)
         model = tf.keras.models.Sequential([
             tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
             tf.keras.layers.Dense(64, activation='relu'),
@@ -81,7 +81,6 @@ class Game:
         model.fit(X, y, epochs=config.EPOCHS)
         model.save(config.MODEL_PATH)
         return model
-
 
     def render(self, player):
         episode_env = player.env.copy()
@@ -109,11 +108,9 @@ class Game:
             self.render(player)
 
             state = [player.px, player.py, player.food_x, player.food_y]
-            player.run_v2(state, model)
+            player.run(state, model)
             if player.done is True:
                 # TODO
                 # restart the game after 10 seconds
                 return
             time.sleep(0.05)
-
-   
