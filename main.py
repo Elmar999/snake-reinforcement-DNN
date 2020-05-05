@@ -34,8 +34,8 @@ if __name__ == "__main__":
 
     if args.flag_run_game is True:
         if args.flag_train is not True:
-            assert args.flag_model_path is not 
+            assert args.flag_model_path is not
             model_path = args.flag_model_path
-            game.game_run(model_path)  
-
-    game.game_run_v2()
+            game.game_run(model_path)
+        else:
+            game.game_run()

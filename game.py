@@ -12,8 +12,6 @@ import config
 class Game:
     def __init__(self):
         self.state = np.array((0, 0, 0, 0)).reshape((1, 4))
-        self.episode = 0
-        self.load_model = False
 
     def generate_data(self, nb_episodes):
         # if random is false means we will play game
@@ -43,12 +41,11 @@ class Game:
                 if game_score != 0:
                     game_prev_score = game_score
                     reward = 100
-                    # print(game_score, score)
-                    break
+                    print(reward)
+                    # break
                 else:
                     reward = -5
                 score += reward
-                print("end")
 
             if score >= score_requirement:
                 accepted_scores.append(score)
@@ -64,10 +61,27 @@ class Game:
                     training_data.append([data[0], output])
 
         training_data_save = np.array(training_data)
-        np.save('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_test.npy',
+        np.save(config.DATA_PATH,
                 training_data_save, allow_pickle=True)
         print(accepted_scores)
         return training_data
+
+     def train(self, training_data):
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
+            tf.keras.layers.Dense(64, activation='relu'),
+            tf.keras.layers.Dense(4, activation='softmax')])
+        model.compile(loss='categorical_crossentropy',
+                      optimizer=tf.keras.optimizers.Adam(lr=0.001))
+
+        X = np.array([i[0] for i in training_data]
+                     ).reshape(-1, len(training_data[0][0]))
+        y = np.array([i[1] for i in training_data]
+                     ).reshape(-1, len(training_data[0][1]))
+        model.fit(X, y, epochs=config.EPOCHS)
+        model.save(config.MODEL_PATH)
+        return model
+
 
     def render(self, player):
         episode_env = player.env.copy()
@@ -80,12 +94,15 @@ class Game:
         cv2.imshow("env", episode_env)
         cv2.waitKey(1)
 
-    def game_run(self):
+    def game_run(self, model_path=None):
 
         player = Player()
         player.init_food()
         player.init_player()
-        model = tf.keras.models.load_model(config.MODEL_PATH)
+        if model_path:
+            model = tf.keras.models.load_model(model_path)
+        else:
+            model = tf.keras.models.load_model(config.MODEL_PATH)
 
         while True:
             # rendering
@@ -99,19 +116,4 @@ class Game:
                 return
             time.sleep(0.05)
 
-    def train(self, training_data):
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(4, activation='softmax')])
-        model.compile(loss='categorical_crossentropy',
-                    optimizer=tf.keras.optimizers.Adam(lr=0.001))
-
-        X = np.array([i[0] for i in training_data]
-                    ).reshape(-1, len(training_data[0][0]))
-        y = np.array([i[1] for i in training_data]
-                    ).reshape(-1, len(training_data[0][1]))
-        model.fit(X, y, epochs=1000)
-        model.save(
-            "/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5")
-        return model
+   
