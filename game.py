@@ -6,6 +6,7 @@ import random
 import time
 from tqdm import tqdm
 import cProfile
+import config
 
 
 class Game:
@@ -79,13 +80,12 @@ class Game:
         cv2.imshow("env", episode_env)
         cv2.waitKey(1)
 
-    def game_run_v2(self):
+    def game_run(self):
 
         player = Player()
         player.init_food()
         player.init_player()
-        model = tf.keras.models.load_model(
-            '/home/elmar/Documents/projects/rl_learning/snake_game/snake_model.h5')
+        model = tf.keras.models.load_model(config.MODEL_PATH)
 
         while True:
             # rendering
@@ -99,20 +99,19 @@ class Game:
                 return
             time.sleep(0.05)
 
+    def train(self, training_data):
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
+            tf.keras.layers.Dense(64, activation='relu'),
+            tf.keras.layers.Dense(4, activation='softmax')])
+        model.compile(loss='categorical_crossentropy',
+                    optimizer=tf.keras.optimizers.Adam(lr=0.001))
 
-def train_model(training_data):
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
-        tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(4, activation='softmax')])
-    model.compile(loss='categorical_crossentropy',
-                  optimizer=tf.keras.optimizers.Adam(lr=0.001))
-
-    X = np.array([i[0] for i in training_data]
-                 ).reshape(-1, len(training_data[0][0]))
-    y = np.array([i[1] for i in training_data]
-                 ).reshape(-1, len(training_data[0][1]))
-    model.fit(X, y, epochs=1000)
-    model.save(
-        "/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5")
-    return model
+        X = np.array([i[0] for i in training_data]
+                    ).reshape(-1, len(training_data[0][0]))
+        y = np.array([i[1] for i in training_data]
+                    ).reshape(-1, len(training_data[0][1]))
+        model.fit(X, y, epochs=1000)
+        model.save(
+            "/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5")
+        return model

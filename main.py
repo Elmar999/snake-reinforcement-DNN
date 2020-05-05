@@ -25,10 +25,17 @@ if __name__ == "__main__":
         game.generate_data(nb_episodes)
 
     if args.flag_train is True:
-
         if args.flag_gen_data is not True:
             assert args.flag_load_data is not None
             data_path = args.flag_load_data
-        
+            game.train(data_path)
+        else:
+            game.train()
+
+    if args.flag_run_game is True:
+        if args.flag_train is not True:
+            assert args.flag_model_path is not 
+            model_path = args.flag_model_path
+            game.game_run(model_path)  
 
     game.game_run_v2()
