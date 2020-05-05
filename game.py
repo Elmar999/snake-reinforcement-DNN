@@ -14,13 +14,13 @@ class Game:
         self.episode = 0
         self.load_model = False
 
-    def random_game(self):
+    def generate_data(self, nb_episodes):
         # if random is false means we will play game
         score_requirement = -200
         training_data = []
         accepted_scores = []
 
-        for game_index in tqdm(range(1)):
+        for game_index in tqdm(range(nb_episodes)):
             # reset environment
             player = Player()
             player.init_player()
@@ -103,7 +103,7 @@ class Game:
 def train_model(training_data):
     model = tf.keras.models.Sequential([
         tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
-        # tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dense(4, activation='softmax')])
     model.compile(loss='categorical_crossentropy',
                   optimizer=tf.keras.optimizers.Adam(lr=0.001))
@@ -116,19 +116,3 @@ def train_model(training_data):
     model.save(
         "/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5")
     return model
-
-
-# if __name__ == "__main__":
-
-#     game = Game()
-    # game.game_run()
-    # game.game_run_v2()
-
-    # training_data = game.train_run_game()
-    # training_data = game.random_game()
-    # training_data = np.load('/home/elmar/Documents/projects/rl_learning/snake_game/snake_data_200.npy')
-    # model = train_model(training_data)
-    # print(ar)
-    # trained_model = tf.keras.models.load_model('/home/elmar/Documents/projects/rl_learning/snake_game/snake_model_best.h5')
-    # trained_model.predict(np.reshape([364, 173, 365, 422], (1, 4)))
-    # cProfile.run(game.game_run_v2())
