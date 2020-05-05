@@ -6,13 +6,22 @@ from tqdm import tqdm
 import tensorflow as tf
 
 
-
 class Game:
+    """
+    Game class with corresponding functionalities
+    Attributes:
+        state (np.array): 
+    """
+
     def __init__(self):
         self.state = np.array((0, 0, 0, 0)).reshape((1, 4))
 
     def generate_data(self, nb_episodes):
-        # if random is false means we will play game
+        """
+        generate data over nb_episodes with user play
+        Args:
+            nb_episodes (int): number of episodes will be used to generate data
+        """
         score_requirement = -200
         training_data = []
         accepted_scores = []
@@ -30,8 +39,7 @@ class Game:
             prev_distance = 1000
             for step_index in range(1000):
                 state = [player.px, player.py, player.food_x, player.food_y]
-                # player.preprocessing()
-                new_state, action, game_score = player.preprocessing(state)
+                new_state, action, game_score = player.preprocessing()
                 if len(prev_state) > 0:
                     game_memory.append([prev_state, action])
                 prev_state = new_state
@@ -46,6 +54,7 @@ class Game:
             if score >= score_requirement:
                 accepted_scores.append(score)
                 for data in game_memory:
+                    # one hot encoding
                     if data[1] == 0:
                         output = [1, 0, 0, 0]
                     elif data[1] == 1:
@@ -63,6 +72,11 @@ class Game:
         return training_data
 
     def train(self, training_data_path):
+        """
+        train model over over generated data
+        Args:
+            training_data_path (str): path of generated data obtained during user play.
+        """
         training_data = np.load(training_data_path)
         model = tf.keras.models.Sequential([
             tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
@@ -80,6 +94,11 @@ class Game:
         return model
 
     def render(self, player):
+        """
+        rendering environment
+        Args:
+            player (class Player): player object 
+        """
         episode_env = player.env.copy()
         cv2.circle(episode_env, (player.food_x, player.food_y),
                    5, (255, 255, 255), 5)
@@ -88,9 +107,17 @@ class Game:
         cv2.putText(episode_env, "score" + str(player.score),
                     (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
         cv2.imshow("env", episode_env)
-        cv2.waitKey(1)
+        key = cv2.waitKey(1)
+        if key == 27:
+            # user pressed 'esc'
+            exit(0)
 
     def game_run(self, model_path=None):
+        """
+        runing game with neural network model
+        Args:
+            model_path (str): path of trained model
+        """
 
         player = Player()
         player.init_food()
@@ -107,7 +134,6 @@ class Game:
             state = [player.px, player.py, player.food_x, player.food_y]
             player.run(state, model)
             if player.done is True:
-                # TODO
-                # restart the game after 10 seconds
-                return
+                time.sleep(5)
+                exit(0)
             time.sleep(0.05)

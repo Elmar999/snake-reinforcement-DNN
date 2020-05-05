@@ -1,5 +1,5 @@
+import argparse
 from game import *
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='appsubmit')
