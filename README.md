@@ -16,7 +16,7 @@ Data has always been one of the most important things in AI related problems. In
 
 <!-- ![](imgs/reinfo_learning.png) -->
 
-<img src="./imgs/reinfo_learning.png" alt="Screenshot" style="max-width:100%;">
+<img src="./imgs/reinfo_learning.png" alt="Screenshot" style="max-width:50%;">
 
 ## Model
 
