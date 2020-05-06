@@ -60,7 +60,8 @@ $ python3 main.py --run_game --model_path ../game/snake_model.h5
 
 
 ### Game Demo
-<img src="./imgs/game.gif" style="max-width:50%;">
+Bot is playing on his own.
 
+<img src="./imgs/game.gif" style="max-width:50%;">
 
 
