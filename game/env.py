@@ -37,7 +37,7 @@ class Player:
         self.food_x = None
         self.food_y = None
         self.reward = None
-        self.score = None
+        self.score = 0
         self.done = False
         self.action = None
         self.actions_history = []

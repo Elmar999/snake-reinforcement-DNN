@@ -37,7 +37,7 @@ class Game:
             game_score = 0
             prev_state = []
             prev_distance = 1000
-            for step_index in range(1000):
+            for step_index in range(10000):
                 state = [player.px, player.py, player.food_x, player.food_y]
                 new_state, action, game_score = player.preprocessing()
                 if len(prev_state) > 0:
@@ -136,4 +136,4 @@ class Game:
             if player.done is True:
                 time.sleep(5)
                 exit(0)
-            time.sleep(0.05)
+            time.sleep(0.001)

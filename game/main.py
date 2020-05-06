@@ -2,7 +2,7 @@ import argparse
 from game import *
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog='appsubmit')
+    parser = argparse.ArgumentParser(prog='main.py')
     parser.add_argument('--generate_data', help='generate training data',
                         action='store_true', dest='flag_gen_data')
     parser.add_argument(
