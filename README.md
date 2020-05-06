@@ -1,4 +1,4 @@
-## snake-like-game-ai-reinforcement
+## Snake-like game with Neural Network
 
 Info: This game is not snake game. The goal is to apply reinforcement techniques to teach the player to detect the position of food and get it. AI for real snake game will be programmed later on.
 
