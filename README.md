@@ -14,9 +14,8 @@ AI for snake-like game trained from the states of environment using Neural Netwo
 ## Data
 Data has always been one of the most important things in AI related problems. In order to teach the player to make an action in each state, data should be well gathered. In order to have a good data I did not play the game randomly but with user-handling keyboard. So I played the game for about 300 episodes, gave the reward when player eats food and gathered data.  
 
-<!-- ![](imgs/reinfo_learning.png) -->
 
-<img src="./imgs/reinfo_learning.png" alt="Screenshot" style="max-width:50%;">
+<img src="./imgs/reinfo_learning.png" style="max-width:100%;">
 
 ## Model
 
