@@ -37,7 +37,7 @@ class Game:
             game_score = 0
             prev_state = []
             prev_distance = 1000
-            for step_index in range(10000):
+            for step_index in range(200):
                 state = [player.px, player.py, player.food_x, player.food_y]
                 new_state, action, game_score = player.preprocessing()
                 if len(prev_state) > 0:
@@ -46,11 +46,12 @@ class Game:
 
                 if game_score != 0:
                     reward = 100
-                    break
+                    
                 else:
                     reward = -5
                 score += reward
 
+            print("dff")
             if score >= score_requirement:
                 accepted_scores.append(score)
                 for data in game_memory:

@@ -33,7 +33,7 @@ class Player:
         self.env = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8)
         self.px = None
         self.py = None
-        self.velocity = 5
+        self.velocity = 10
         self.snake_px = []
         self.snake_py = []
         self.food_x = None
@@ -61,13 +61,10 @@ class Player:
         self.py = np.random.randint(0 + offset, WINDOW_HEIGHT-offset)
         self.snake_px.append(self.px)
         self.snake_py.append(self.py)
-    
-    def update_length(self, x_change, y_change):
-        for i in range(len(self.snake_px)):
-            self.snake_px[i] += x_change
-            self.snake_py[i] += y_change
+
 
     def move(self, action):
+        food = False
         """
         change position of player according to action.
         Args:
@@ -77,27 +74,29 @@ class Player:
             self.py -= self.velocity
             x_change = 0
             y_change = -10
-            self.update_length(x_change, y_change)
-        
+
         elif action == 1:  # right
             self.px += self.velocity
             x_change = 10
             y_change = 0
-            self.update_length(x_change, y_change)
 
         elif action == 2:  # down
             self.py += self.velocity
             x_change = 0
             y_change = 10
-            self.update_length(x_change, y_change)
 
         elif action == 3:  # left
             self.px -= self.velocity
             x_change = -10
             y_change = 0
-            self.update_length(x_change, y_change)
 
-        return x_change, y_change
+        distance = self.check_distance()
+        if distance < 12:
+            self.init_food()
+            self.score += 1
+            food = True
+        
+        return food 
 
     def user_play(self, movement):
         """
@@ -126,13 +125,25 @@ class Player:
         """
         check distance between player and food
         """
-        player_distance = np.array([self.px, self.py])
+        player_distance = np.array([self.snake_px[-1], self.snake_py[-1]])
         food_distance = np.array([self.food_x, self.food_y])
         distance = np.linalg.norm(np.subtract(player_distance, food_distance))
         return distance
-    
-    def update_snake(self):
-        pass
+
+    def update_snake(self, food):
+        if food is not True:
+            for i in range(0, len(self.snake_px)-1):
+                self.snake_px[i] = self.snake_px[i+1]
+                self.snake_py[i] = self.snake_py[i+1]
+            self.snake_px[-1] = self.px
+            self.snake_py[-1] = self.py
+            print(self.snake_px, self.snake_py)
+
+        else:
+            self.snake_px.append(self.px)
+            self.snake_py.append(self.py)
+            print(self.snake_px, self.snake_py)
+
 
     def preprocessing(self):
         """
@@ -142,39 +153,35 @@ class Player:
         state = [self.px, self.py, self.food_x, self.food_y]
 
         cv2.circle(self.episode_env, (self.food_x, self.food_y),
-                5, (255, 153, 255), 5)
-        for i in range(len(self.snake_px)):
+                   5, (255, 153, 255), 5)
+
+        cv2.circle(self.episode_env, (self.snake_px[-1], self.snake_py[-1]),
+                   5, (255, 255, 255), 3)
+        for i in range(0, len(self.snake_px)-1):
             cv2.circle(self.episode_env, (self.snake_px[i], self.snake_py[i]),
-                    5, (255, 255, 255), 1)
-        
+                       5, (255, 255, 255), 1)
+
         cv2.putText(self.episode_env, "score" + str(self.score),
                     (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
         cv2.imshow("env", self.episode_env)
-        movement = cv2.waitKey(1)                  
+        movement = cv2.waitKey(0)
+        print(movement)
         action = self.user_play(movement)
 
         if action == 3:
-            x_change, y_change = self.move(3)
+            food = self.move(3)
+            self.update_snake(food)
         elif action == 1:
-            x_change, y_change = self.move(1)
+            food = self.move(1)
+            self.update_snake(food)
         elif action == 2:
-            x_change, y_change = self.move(2)
+            food = self.move(2)
+            self.update_snake(food)
         elif action == 0:
-            x_change, y_change = self.move(0)
-
-
-        self.update_snake()        
+            food = self.move(0)
+            self.update_snake(food)
         new_state = [self.px, self.py, self.food_x, self.food_y]
-
-        distance = self.check_distance()
-        if distance < 12:
-            self.init_food()
-            self.score += 1
-            self.snake_px.append(self.px+x_change)
-            self.snake_py.append(self.py+y_change)
-
-
-
+ 
         if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
             done = True
             reward = -10
