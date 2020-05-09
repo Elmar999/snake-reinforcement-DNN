@@ -90,7 +90,7 @@ class Player:
             y_change = 0
 
         distance = self.check_distance()
-        if distance < 12:
+        if distance < 15:
             self.init_food()
             self.score += 1
             food = True
@@ -129,6 +129,25 @@ class Player:
         distance = np.linalg.norm(np.subtract(player_distance, food_distance))
         return distance
 
+    def check_death(self):
+        done = False
+        if self.px <= 5 or self.py <= 5 or self.px >= WINDOW_WIDTH - 5 or self.py >= WINDOW_HEIGHT - 5:
+            done = True
+            reward = -10
+            print("done boundaries")
+            return done
+
+        else:
+            player_distance = np.array([self.snake_px[-1], self.snake_py[-1]])
+            for i in range(len(self.snake_px) - 1):
+                tail = np.array([self.snake_px[i], self.snake_py[i]])
+                distance = np.linalg.norm(np.subtract(player_distance, tail))
+                if distance < 1:
+                    print("done")
+                    done = True
+                    return done
+        return done
+
     def update_snake(self, food):
         if food is not True:
             for i in range(0, len(self.snake_px)-1):
@@ -142,20 +161,6 @@ class Player:
             self.snake_px.append(self.px)
             self.snake_py.append(self.py)
             print(self.snake_px, self.snake_py)
-
-    def check_death():
-        if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
-            done = True
-            reward = -10
-            print("done")
-
-        else:
-            player_distance = np.array([self.snake_px[-1], self.snake_py[-1]])
-            for i in range(len(self.snake_px) - 1):
-                tail = np.array([self.snake_px[i], self.snake_py[i]])
-                distance = np.linalg.norm(np.subtract(player_distance, tail))
-                if distance < 1:
-                    print("done")
 
     def preprocessing(self):
         """
@@ -179,8 +184,8 @@ class Player:
         movement = cv2.waitKey(0)
         action = self.user_play(movement)
 
-        if action == 3:
-            food = self.move(3)
+        if action == 0:
+            food = self.move(0)
             self.update_snake(food)
         elif action == 1:
             food = self.move(1)
@@ -188,14 +193,15 @@ class Player:
         elif action == 2:
             food = self.move(2)
             self.update_snake(food)
-        elif action == 0:
-            food = self.move(0)
+        elif action == 3:
+            food = self.move(3)
             self.update_snake(food)
+
         new_state = [self.px, self.py, self.food_x, self.food_y]
 
-        self.check_death()
+        done = self.check_death()
 
-        return new_state, action, self.score
+        return new_state, action, done
 
     def run(self, state, model=None):
         """
@@ -207,7 +213,6 @@ class Player:
         if model:
             action = np.argmax(
                 model.predict(np.reshape(state, (1, 4))))
-            # print(self.action)
             self.actions_history.append(action)
 
             if len(self.actions_history) > 4:
@@ -218,23 +223,17 @@ class Player:
                 if len(dc) == 2:
                     action = np.random.randint(0, 4)
 
-        if action == 3:
-            self.move(3)
+        if action == 0:
+            food = self.move(0)
+            self.update_snake(food)
         elif action == 1:
-            self.move(1)
+            food = self.move(1)
+            self.update_snake(food)
         elif action == 2:
-            self.move(2)
-        elif action == 0:
-            self.move(0)
-
-        self.check_distance()
+            food = self.move(2)
+            self.update_snake(food)
+        elif action == 3:
+            food = self.move(3)
+            self.update_snake(food)
 
         self.check_death()
-
-        if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
-            done = True
-            self.reward = -10
-            print(self.px, self.py, self.food_x, self.food_y)
-            print("done")
-        else:
-            done = False

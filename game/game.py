@@ -16,6 +16,36 @@ class Game:
     def __init__(self):
         self.state = np.array((0, 0, 0, 0)).reshape((1, 4))
 
+    def render(self, player):
+        """
+        rendering environment
+        Args:
+            player (class Player): player object 
+        """
+        episode_env = player.env.copy()
+        cv2.circle(episode_env, (player.food_x, player.food_y),
+                   5, (255, 255, 255), 5)
+        cv2.circle(episode_env, (player.px, player.py),
+                   5, (255, 255, 255), 1)
+        cv2.putText(episode_env, "score" + str(player.score),
+                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
+        cv2.imshow("env", episode_env)
+        key = cv2.waitKey(1)
+        if key == 27:
+            # user pressed 'esc'
+            exit(0)
+
+    def frame_game_over(self):
+        frame = np.ones((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8) * 255
+        print(frame)
+        cv2.putText(frame, "Game Over",
+                    (100, 240), 5, cv2.FONT_HERSHEY_DUPLEX, (0, 0, 0), 5)
+        cv2.imshow("Game Over", frame)
+        key = cv2.waitKey(1)
+        if key == 27:
+            # user pressed 'esc'
+            exit(0)
+
     def generate_data(self, nb_episodes):
         """
         generate data over nb_episodes with user play
@@ -39,14 +69,17 @@ class Game:
             prev_distance = 1000
             for step_index in range(200):
                 state = [player.px, player.py, player.food_x, player.food_y]
-                new_state, action, game_score = player.preprocessing()
+                new_state, action, done = player.preprocessing()
+                if done:
+                    self.frame_game_over()
+                    # pass
                 if len(prev_state) > 0:
                     game_memory.append([prev_state, action])
                 prev_state = new_state
 
-                if game_score != 0:
+                if player.score != 0:
                     reward = 100
-                    
+
                 else:
                     reward = -5
                 score += reward
@@ -92,25 +125,6 @@ class Game:
         model.fit(X, y, epochs=config.EPOCHS)
         model.save(config.MODEL_PATH)
         return model
-
-    def render(self, player):
-        """
-        rendering environment
-        Args:
-            player (class Player): player object 
-        """
-        episode_env = player.env.copy()
-        cv2.circle(episode_env, (player.food_x, player.food_y),
-                   5, (255, 255, 255), 5)
-        cv2.circle(episode_env, (player.px, player.py),
-                   5, (255, 255, 255), 1)
-        cv2.putText(episode_env, "score" + str(player.score),
-                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
-        cv2.imshow("env", episode_env)
-        key = cv2.waitKey(1)
-        if key == 27:
-            # user pressed 'esc'
-            exit(0)
 
     def game_run(self, model_path=None):
         """
