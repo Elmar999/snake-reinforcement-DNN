@@ -51,7 +51,6 @@ class Game:
                     reward = -5
                 score += reward
 
-            print("dff")
             if score >= score_requirement:
                 accepted_scores.append(score)
                 for data in game_memory:

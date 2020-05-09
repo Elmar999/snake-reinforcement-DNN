@@ -62,7 +62,6 @@ class Player:
         self.snake_px.append(self.px)
         self.snake_py.append(self.py)
 
-
     def move(self, action):
         food = False
         """
@@ -95,8 +94,8 @@ class Player:
             self.init_food()
             self.score += 1
             food = True
-        
-        return food 
+
+        return food
 
     def user_play(self, movement):
         """
@@ -144,6 +143,19 @@ class Player:
             self.snake_py.append(self.py)
             print(self.snake_px, self.snake_py)
 
+    def check_death():
+        if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
+            done = True
+            reward = -10
+            print("done")
+
+        else:
+            player_distance = np.array([self.snake_px[-1], self.snake_py[-1]])
+            for i in range(len(self.snake_px) - 1):
+                tail = np.array([self.snake_px[i], self.snake_py[i]])
+                distance = np.linalg.norm(np.subtract(player_distance, tail))
+                if distance < 1:
+                    print("done")
 
     def preprocessing(self):
         """
@@ -165,7 +177,6 @@ class Player:
                     (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
         cv2.imshow("env", self.episode_env)
         movement = cv2.waitKey(0)
-        print(movement)
         action = self.user_play(movement)
 
         if action == 3:
@@ -181,11 +192,8 @@ class Player:
             food = self.move(0)
             self.update_snake(food)
         new_state = [self.px, self.py, self.food_x, self.food_y]
- 
-        if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
-            done = True
-            reward = -10
-            print("done")
+
+        self.check_death()
 
         return new_state, action, self.score
 
@@ -220,6 +228,8 @@ class Player:
             self.move(0)
 
         self.check_distance()
+
+        self.check_death()
 
         if self.px <= 0 or self.py <= 0 or self.px >= WINDOW_WIDTH or self.py >= WINDOW_HEIGHT:
             done = True
