@@ -5,6 +5,13 @@ import numpy as np
 from tqdm import tqdm
 import tensorflow as tf
 
+WINDOW_WIDTH = 500
+WINDOW_HEIGHT = 500
+BLACK_COLOR = (0, 0, 0)
+RED_COLOR = (255, 0, 0)
+BLUE_COLOR = (0, 0, 255)
+WHITE_COLOR = (255, 255, 255)
+
 
 class Game:
     """
@@ -23,12 +30,16 @@ class Game:
             player (class Player): player object 
         """
         episode_env = player.env.copy()
+
+        cv2.circle(episode_env, (player.snake_px[-1], player.snake_py[-1]),
+                   5, BLUE_COLOR, -1)
         cv2.circle(episode_env, (player.food_x, player.food_y),
-                   5, (255, 255, 255), 5)
-        cv2.circle(episode_env, (player.px, player.py),
-                   5, (255, 255, 255), 1)
+                   5, RED_COLOR, 5)
+        for i in range(len(player.snake_px)-1):
+            cv2.circle(episode_env, (player.snake_px[i], player.snake_py[i]),
+                       5, BLACK_COLOR, -1)
         cv2.putText(episode_env, "score" + str(player.score),
-                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
+                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, BLACK_COLOR, 1)
         cv2.imshow("env", episode_env)
         key = cv2.waitKey(1)
         if key == 27:
@@ -67,7 +78,6 @@ class Game:
             prev_state = []
             prev_distance = 1000
             for step_index in range(1000):
-                state = [player.px, player.py, player.food_x, player.food_y]
                 new_state, action, done = player.preprocessing()
                 if done:
                     self.frame_game_over()
@@ -109,9 +119,10 @@ class Game:
         Args:
             training_data_path (str): path of generated data obtained during user play.
         """
-        training_data = np.load(training_data_path)
+        training_data = np.load(training_data_path, allow_pickle=True)
+        print(training_data)
         model = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(64, input_shape=(4,), activation='relu'),
+            tf.keras.layers.Dense(64, input_shape=(8,), activation='relu'),
             tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(4, activation='softmax')])
         model.compile(loss='categorical_crossentropy',
@@ -144,9 +155,10 @@ class Game:
             # rendering
             self.render(player)
 
-            state = [player.px, player.py, player.food_x, player.food_y]
+            state = player.check_neighbours(
+            ) + [player.snake_px[-1], player.snake_py[-1], player.food_x, player.food_y]
             player.run(state, model)
             if player.done is True:
                 time.sleep(5)
                 exit(0)
-            time.sleep(0.001)
+            time.sleep(0.05)

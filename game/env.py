@@ -169,7 +169,7 @@ class Player:
             self.snake_py.append(self.py)
             self.grid[self.px, self.py] = 1
 
-    def check_neigbours(self):
+    def check_neighbours(self):
         """
         check 4 neighbours of snake head: up, down, right, left
         """
@@ -183,6 +183,7 @@ class Player:
         if self.grid[self.px - 10][self.py] == 1:
             neighbours[3] = 1
 
+        return neighbours
 
     def preprocessing(self):
         """
@@ -219,10 +220,9 @@ class Player:
             food = self.move(3)
             self.update_snake(food)
 
-        new_state = [self.px, self.py, self.food_x, self.food_y]
+        new_state = self.check_neighbours() + [self.snake_px[-1], self.snake_py[-1], self.food_x, self.food_y]
 
         done = self.check_death()
-        self.check_neigbours()
 
         return new_state, action, done
 
@@ -235,7 +235,7 @@ class Player:
         """
         if model:
             action = np.argmax(
-                model.predict(np.reshape(state, (1, 4))))
+                model.predict(np.reshape(state, (1, 8))))
             self.actions_history.append(action)
 
             if len(self.actions_history) > 4:
@@ -259,4 +259,4 @@ class Player:
             food = self.move(3)
             self.update_snake(food)
 
-        self.check_death()
+        done = self.check_death()
