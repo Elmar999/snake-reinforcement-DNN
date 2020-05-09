@@ -36,10 +36,9 @@ class Game:
             exit(0)
 
     def frame_game_over(self):
-        frame = np.ones((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8) * 255
-        print(frame)
+        frame = np.ones((WINDOW_WIDTH, WINDOW_HEIGHT, 3), np.uint8) * 255
         cv2.putText(frame, "Game Over",
-                    (100, 240), 5, cv2.FONT_HERSHEY_DUPLEX, (0, 0, 0), 5)
+                    (100, 240), 5, cv2.FONT_HERSHEY_DUPLEX, (255, 0, 0), 5)
         cv2.imshow("Game Over", frame)
         key = cv2.waitKey(1)
         if key == 27:
@@ -56,7 +55,7 @@ class Game:
         training_data = []
         accepted_scores = []
 
-        for game_index in tqdm(range(nb_episodes)):
+        for game_index in tqdm(range(1)):
             # reset environment
             player = Player()
             player.init_player()
@@ -67,7 +66,7 @@ class Game:
             game_score = 0
             prev_state = []
             prev_distance = 1000
-            for step_index in range(200):
+            for step_index in range(1000):
                 state = [player.px, player.py, player.food_x, player.food_y]
                 new_state, action, done = player.preprocessing()
                 if done:
@@ -101,7 +100,7 @@ class Game:
         training_data_save = np.array(training_data)
         np.save(config.DATA_PATH,
                 training_data_save, allow_pickle=True)
-        print(accepted_scores)
+        print(len(training_data))
         return training_data
 
     def train(self, training_data_path):

@@ -4,6 +4,10 @@ import tensorflow as tf
 
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 500
+BLACK_COLOR = (0, 0, 0)
+RED_COLOR = (255, 0, 0)
+BLUE_COLOR = (0, 0, 255)
+WHITE_COLOR = (255, 255, 255)
 
 
 class Player:
@@ -30,7 +34,8 @@ class Player:
         Args:
             env (np.array): environment of the game in the shape of (WINDOW_WIDTH, WINDOW_HEIGHT)
         """
-        self.env = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8)
+        self.env = np.ones((WINDOW_WIDTH, WINDOW_HEIGHT, 3), np.uint8) * 255
+        self.grid = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT), np.uint8)
         self.px = None
         self.py = None
         self.velocity = 10
@@ -150,17 +155,34 @@ class Player:
 
     def update_snake(self, food):
         if food is not True:
+            self.grid = self.grid * 0
             for i in range(0, len(self.snake_px)-1):
                 self.snake_px[i] = self.snake_px[i+1]
                 self.snake_py[i] = self.snake_py[i+1]
+                self.grid[self.snake_px[i]][self.snake_py[i]] = 1
             self.snake_px[-1] = self.px
             self.snake_py[-1] = self.py
-            print(self.snake_px, self.snake_py)
+            self.grid[self.snake_px[-1]][self.snake_py[-1]] = 1
 
         else:
             self.snake_px.append(self.px)
             self.snake_py.append(self.py)
-            print(self.snake_px, self.snake_py)
+            self.grid[self.px, self.py] = 1
+
+    def check_neigbours(self):
+        """
+        check 4 neighbours of snake head: up, down, right, left
+        """
+        neighbours = [0, 0, 0, 0]
+        if self.grid[self.px][self.py - 10] == 1:
+            neighbours[0] = 1
+        if self.grid[self.px][self.py + 10] == 1:
+            neighbours[1] = 1
+        if self.grid[self.px + 10][self.py] == 1:
+            neighbours[2] = 1
+        if self.grid[self.px - 10][self.py] == 1:
+            neighbours[3] = 1
+
 
     def preprocessing(self):
         """
@@ -170,16 +192,16 @@ class Player:
         state = [self.px, self.py, self.food_x, self.food_y]
 
         cv2.circle(self.episode_env, (self.food_x, self.food_y),
-                   5, (255, 153, 255), 5)
+                   5, RED_COLOR, 5)
 
         cv2.circle(self.episode_env, (self.snake_px[-1], self.snake_py[-1]),
-                   5, (255, 255, 255), 3)
+                   5, BLUE_COLOR, -1)
         for i in range(0, len(self.snake_px)-1):
             cv2.circle(self.episode_env, (self.snake_px[i], self.snake_py[i]),
-                       5, (255, 255, 255), 1)
+                       5, BLACK_COLOR, -1)
 
         cv2.putText(self.episode_env, "score" + str(self.score),
-                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, (255, 255, 255), 1)
+                    (20, 30), 1, cv2.FONT_HERSHEY_DUPLEX, BLACK_COLOR, 1)
         cv2.imshow("env", self.episode_env)
         movement = cv2.waitKey(0)
         action = self.user_play(movement)
@@ -200,6 +222,7 @@ class Player:
         new_state = [self.px, self.py, self.food_x, self.food_y]
 
         done = self.check_death()
+        self.check_neigbours()
 
         return new_state, action, done
 
