@@ -76,7 +76,7 @@ class Game:
         game_score = 0
         prev_state = []
         prev_distance = 1000
-        for step_index in range(2000):
+        for step_index in range(nb_episodes):
             new_state, action, done = player.preprocessing()
             if done:
                 self.frame_game_over()
