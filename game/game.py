@@ -77,7 +77,7 @@ class Game:
             game_score = 0
             prev_state = []
             prev_distance = 1000
-            for step_index in range(1000):
+            for step_index in range(2000):
                 new_state, action, done = player.preprocessing()
                 if done:
                     self.frame_game_over()
@@ -110,7 +110,6 @@ class Game:
         training_data_save = np.array(training_data)
         np.save(config.DATA_PATH,
                 training_data_save, allow_pickle=True)
-        print(len(training_data))
         return training_data
 
     def train(self, training_data_path):
@@ -120,13 +119,14 @@ class Game:
             training_data_path (str): path of generated data obtained during user play.
         """
         training_data = np.load(training_data_path, allow_pickle=True)
-        print(training_data)
         model = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(64, input_shape=(8,), activation='relu'),
-            tf.keras.layers.Dense(64, activation='relu'),
+            tf.keras.layers.Dense(24, input_shape=(8,), activation='relu'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Dense(24, activation='relu'),
+            tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Dense(4, activation='softmax')])
         model.compile(loss='categorical_crossentropy',
-                      optimizer=tf.keras.optimizers.Adam(lr=0.001))
+                      optimizer='adam')
 
         X = np.array([i[0] for i in training_data]
                      ).reshape(-1, len(training_data[0][0]))
@@ -157,8 +157,7 @@ class Game:
 
             state = player.check_neighbours(
             ) + [player.snake_px[-1], player.snake_py[-1], player.food_x, player.food_y]
-            player.run(state, model)
-            if player.done is True:
-                time.sleep(5)
-                exit(0)
+            done = player.run(state, model)
+            if done:
+                self.frame_game_over()
             time.sleep(0.05)

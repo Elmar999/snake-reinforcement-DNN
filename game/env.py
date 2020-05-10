@@ -238,14 +238,6 @@ class Player:
                 model.predict(np.reshape(state, (1, 8))))
             self.actions_history.append(action)
 
-            if len(self.actions_history) > 4:
-                dc = dict()
-                history = self.actions_history[-4:]
-                for i in history:
-                    dc[i] = 1
-                if len(dc) == 2:
-                    action = np.random.randint(0, 4)
-
         if action == 0:
             food = self.move(0)
             self.update_snake(food)
@@ -260,3 +252,5 @@ class Player:
             self.update_snake(food)
 
         done = self.check_death()
+
+        return done
