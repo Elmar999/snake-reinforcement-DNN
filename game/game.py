@@ -66,46 +66,45 @@ class Game:
         training_data = []
         accepted_scores = []
 
-        for game_index in tqdm(range(1)):
-            # reset environment
-            player = Player()
-            player.init_player()
-            player.init_food()
-            player.score = 0
-            score = 0
-            game_memory = []
-            game_score = 0
-            prev_state = []
-            prev_distance = 1000
-            for step_index in range(2000):
-                new_state, action, done = player.preprocessing()
-                if done:
-                    self.frame_game_over()
-                    # pass
-                if len(prev_state) > 0:
-                    game_memory.append([prev_state, action])
-                prev_state = new_state
+        # reset environment
+        player = Player()
+        player.init_player()
+        player.init_food()
+        player.score = 0
+        score = 0
+        game_memory = []
+        game_score = 0
+        prev_state = []
+        prev_distance = 1000
+        for step_index in range(2000):
+            new_state, action, done = player.preprocessing()
+            if done:
+                self.frame_game_over()
+                # pass
+            if len(prev_state) > 0:
+                game_memory.append([prev_state, action])
+            prev_state = new_state
 
-                if player.score != 0:
-                    reward = 100
+            if player.score != 0:
+                reward = 100
 
-                else:
-                    reward = -5
-                score += reward
+            else:
+                reward = -5
+            score += reward
 
-            if score >= score_requirement:
-                accepted_scores.append(score)
-                for data in game_memory:
-                    # one hot encoding
-                    if data[1] == 0:
-                        output = [1, 0, 0, 0]
-                    elif data[1] == 1:
-                        output = [0, 1, 0, 0]
-                    elif data[1] == 2:
-                        output = [0, 0, 1, 0]
-                    elif data[1] == 3:
-                        output = [0, 0, 0, 1]
-                    training_data.append([data[0], output])
+        if score >= score_requirement:
+            accepted_scores.append(score)
+            for data in game_memory:
+                # one hot encoding
+                if data[1] == 0:
+                    output = [1, 0, 0, 0]
+                elif data[1] == 1:
+                    output = [0, 1, 0, 0]
+                elif data[1] == 2:
+                    output = [0, 0, 1, 0]
+                elif data[1] == 3:
+                    output = [0, 0, 0, 1]
+                training_data.append([data[0], output])
 
         training_data_save = np.array(training_data)
         np.save(config.DATA_PATH,
