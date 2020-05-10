@@ -65,6 +65,10 @@ class Game:
         score_requirement = -200
         training_data = []
         accepted_scores = []
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
         # reset environment
         player = Player()
         player.init_player()
