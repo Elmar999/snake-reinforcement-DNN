@@ -1,4 +1,4 @@
-## Snake-like game with Neural Network
+## Snake game with Deep Neural Network
 
 ### Introduction
 AI for snake-like game trained from the states of environment using Neural Network. Neural Network is implemented using [Keras](https://keras.io/) functional API, that makes it easy to experiment with different architectures. The input of Neural Network is the state elements of our environment. <br/> We have 8 states in this game:
